@@ -99,6 +99,7 @@ export class BarGauge extends PureComponent<Props> {
     return (
       <div style={styles.wrapper}>
         <FormattedValueDisplay className="bar-gauge__value" value={value} style={styles.value} />
+        <div style={styles.emptyBar} />
         <div style={styles.bar} />
       </div>
     );
@@ -289,6 +290,7 @@ export function getTitleStyles(props: Props): { wrapper: CSSProperties; title: C
   const wrapperStyles: CSSProperties = {
     display: 'flex',
     overflow: 'hidden',
+    width: '100%',
   };
 
   const titleDim = calculateTitleDimensions(props);
@@ -327,6 +329,7 @@ export function getTitleStyles(props: Props): { wrapper: CSSProperties; title: C
 interface BasicAndGradientStyles {
   wrapper: CSSProperties;
   bar: CSSProperties;
+  emptyBar: CSSProperties;
   value: CSSProperties;
 }
 
@@ -402,10 +405,17 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
   const isBasic = displayMode === 'basic';
   const wrapperStyles: CSSProperties = {
     display: 'flex',
+    width: '100%',
   };
 
   const barStyles: CSSProperties = {
     borderRadius: '3px',
+  };
+
+  const emptyBar: CSSProperties = {
+    background: 'rgba(255,255,255,0.06)',
+    flexGrow: 1,
+    display: 'flex',
   };
 
   if (isVertical(orientation)) {
@@ -414,16 +424,21 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     // vertical styles
     wrapperStyles.flexDirection = 'column';
     wrapperStyles.justifyContent = 'flex-end';
+    wrapperStyles.flexGrow = 1;
 
     barStyles.transition = 'height 1s';
     barStyles.height = `${barHeight}px`;
     barStyles.width = `${maxBarWidth}px`;
 
+    // adjust so that filled in bar is at the bottom
+    emptyBar.flexDirection = 'column-reverse';
+
     if (isBasic) {
       // Basic styles
       barStyles.background = `${tinycolor(valueColor)
-        .setAlpha(0.25)
+        .setAlpha(0.3)
         .toRgbString()}`;
+
       barStyles.borderTop = `2px solid ${valueColor}`;
     } else {
       // Gradient styles
@@ -435,7 +450,7 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     // Custom styles for horizontal orientation
     wrapperStyles.flexDirection = 'row-reverse';
     wrapperStyles.justifyContent = 'flex-end';
-    wrapperStyles.alignItems = 'center';
+    wrapperStyles.alignItems = 'stretch';
 
     barStyles.transition = 'width 1s';
     barStyles.height = `${maxBarHeight}px`;
@@ -444,7 +459,7 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     if (isBasic) {
       // Basic styles
       barStyles.background = `${tinycolor(valueColor)
-        .setAlpha(0.25)
+        .setAlpha(0.3)
         .toRgbString()}`;
       barStyles.borderRight = `2px solid ${valueColor}`;
     } else {
@@ -457,6 +472,7 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     wrapper: wrapperStyles,
     bar: barStyles,
     value: valueStyles,
+    emptyBar,
   };
 }
 
@@ -523,18 +539,22 @@ function getValueStyles(
 
   // how many pixels in wide can the text be?
   let textWidth = width;
+  const formattedValueString = formattedValueToString(value);
 
   if (isVertical(orientation)) {
+    styles.fontSize = calculateFontSize(formattedValueString, textWidth, height, VALUE_LINE_HEIGHT);
     styles.justifyContent = `center`;
   } else {
-    styles.justifyContent = `flex-start`;
+    styles.fontSize = calculateFontSize(formattedValueString, textWidth, height, VALUE_LINE_HEIGHT);
+    styles.justifyContent = `flex-end`;
     styles.paddingLeft = `${VALUE_LEFT_PADDING}px`;
+    styles.paddingRight = `${VALUE_LEFT_PADDING}px`;
     // Need to remove the left padding from the text width constraints
     textWidth -= VALUE_LEFT_PADDING;
-  }
 
-  const formattedValueString = formattedValueToString(value);
-  styles.fontSize = calculateFontSize(formattedValueString, textWidth, height, VALUE_LINE_HEIGHT);
+    // adjust width of title box
+    styles.width = measureText(formattedValueString, styles.fontSize).width + 20;
+  }
 
   return styles;
 }
