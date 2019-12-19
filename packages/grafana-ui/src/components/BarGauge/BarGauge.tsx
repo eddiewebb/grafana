@@ -412,12 +412,16 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
 
   const barStyles: CSSProperties = {
     borderRadius: '3px',
+    position: 'relative',
+    zIndex: 1,
   };
 
   const emptyBar: CSSProperties = {
     background: 'rgba(255,255,255,0.06)',
     flexGrow: 1,
     display: 'flex',
+    borderRadius: '3px',
+    position: 'relative',
   };
 
   if (isVertical(orientation)) {
@@ -434,6 +438,7 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
 
     // adjust so that filled in bar is at the bottom
     emptyBar.flexDirection = 'column-reverse';
+    emptyBar.bottom = '-3px';
 
     if (isBasic) {
       // Basic styles
@@ -457,6 +462,9 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     barStyles.transition = 'width 1s';
     barStyles.height = `${maxBarHeight}px`;
     barStyles.width = `${barWidth}px`;
+
+    // shift empty region back to fill gaps due to border radius
+    emptyBar.left = '-3px';
 
     if (isBasic) {
       // Basic styles
