@@ -42,6 +42,7 @@ export interface Props extends Themeable {
   displayMode: 'basic' | 'lcd' | 'gradient';
   onClick?: React.MouseEventHandler<HTMLElement>;
   className?: string;
+  showUnfilled?: boolean;
   alignmentFactors?: DisplayValueAlignmentFactors;
 }
 
@@ -57,6 +58,7 @@ export class BarGauge extends PureComponent<Props> {
     orientation: VizOrientation.Horizontal,
     thresholds: [],
     itemSpacing: 10,
+    showUnfilled: true,
   };
 
   render() {
@@ -92,14 +94,14 @@ export class BarGauge extends PureComponent<Props> {
   }
 
   renderBasicAndGradientBars(): ReactNode {
-    const { value } = this.props;
+    const { value, showUnfilled } = this.props;
 
     const styles = getBasicAndGradientStyles(this.props);
 
     return (
       <div style={styles.wrapper}>
         <FormattedValueDisplay className="bar-gauge__value" value={value} style={styles.value} />
-        <div style={styles.emptyBar} />
+        {showUnfilled && <div style={styles.emptyBar} />}
         <div style={styles.bar} />
       </div>
     );
@@ -436,7 +438,7 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     if (isBasic) {
       // Basic styles
       barStyles.background = `${tinycolor(valueColor)
-        .setAlpha(0.3)
+        .setAlpha(0.35)
         .toRgbString()}`;
 
       barStyles.borderTop = `2px solid ${valueColor}`;
@@ -459,7 +461,7 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     if (isBasic) {
       // Basic styles
       barStyles.background = `${tinycolor(valueColor)
-        .setAlpha(0.3)
+        .setAlpha(0.35)
         .toRgbString()}`;
       barStyles.borderRight = `2px solid ${valueColor}`;
     } else {
